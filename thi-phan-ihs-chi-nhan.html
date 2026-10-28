@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Thị phần IHS Haier + Aqua</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: kiểu iOS 27 / One UI 9 — nền nhóm xám nhạt, thanh điều hướng kính mờ dính trên cùng, widget bo tròn lớn,
+   danh sách inset kiểu Cài đặt; điện thoại mở chi tiết bằng bottom sheet, laptop mở bảng chi tiết cố định bên phải. */
+:root{
+  --bg:#F2F2F7; --surface:rgba(255,255,255,.78); --surface-solid:#FFFFFF; --fill:rgba(118,118,128,.12); --fill2:rgba(118,118,128,.08);
+  --ink:#000000; --ink2:rgba(60,60,67,.62); --ink3:rgba(60,60,67,.36); --sep:rgba(60,60,67,.14);
+  --blue:#007AFF; --teal:#1FA9C4; --green:#28A745; --green-bg:rgba(52,199,89,.14); --red:#E5352B; --red-bg:rgba(255,59,48,.12);
+  --orange:#F08A00; --orange-bg:rgba(255,149,0,.14); --gold:#FFB800;
+  --blob1:#B9D3FF; --blob2:#C8F0F5; --blob3:#E3D8FF;
+  --shadow:0 1px 0 rgba(255,255,255,.7) inset,0 10px 30px rgba(15,20,40,.06),0 1px 2px rgba(15,20,40,.04);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Be Vietnam Pro","Segoe UI",Roboto,sans-serif;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Be Vietnam Pro","Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:rgba(28,28,30,.78); --surface-solid:#1C1C1E; --fill:rgba(118,118,128,.24); --fill2:rgba(118,118,128,.16);
+  --ink:#FFFFFF; --ink2:rgba(235,235,245,.62); --ink3:rgba(235,235,245,.32); --sep:rgba(84,84,88,.55);
+  --blue:#0A84FF; --teal:#3FC3DC; --green:#32D74B; --green-bg:rgba(48,209,88,.18); --red:#FF5147; --red-bg:rgba(255,69,58,.18);
+  --orange:#FF9F0A; --orange-bg:rgba(255,159,10,.18); --blob1:#0B2A66; --blob2:#06424C; --blob3:#2B1A5A;
+  --shadow:0 1px 0 rgba(255,255,255,.06) inset,0 10px 30px rgba(0,0,0,.4); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:rgba(28,28,30,.78); --surface-solid:#1C1C1E; --fill:rgba(118,118,128,.24); --fill2:rgba(118,118,128,.16);
+  --ink:#FFFFFF; --ink2:rgba(235,235,245,.62); --ink3:rgba(235,235,245,.32); --sep:rgba(84,84,88,.55);
+  --blue:#0A84FF; --teal:#3FC3DC; --green:#32D74B; --green-bg:rgba(48,209,88,.18); --red:#FF5147; --red-bg:rgba(255,69,58,.18);
+  --orange:#FF9F0A; --orange-bg:rgba(255,159,10,.18); --blob1:#0B2A66; --blob2:#06424C; --blob3:#2B1A5A;
+  --shadow:0 1px 0 rgba(255,255,255,.06) inset,0 10px 30px rgba(0,0,0,.4); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+button{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.aurora i{position:absolute;border-radius:50%;filter:blur(100px);opacity:.55}
+.glass{background:var(--surface);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);border:.5px solid var(--sep);box-shadow:var(--shadow)}
+
+/* nav bar */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);border-bottom:.5px solid transparent;transition:border-color .2s}
+.nav.scrolled{border-bottom-color:var(--sep)}
+.nav-in{max-width:1280px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-title{font-weight:650;font-size:16px;opacity:0;transition:opacity .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav.scrolled .nav-title{opacity:1}
+.seg{display:inline-flex;padding:2px;border-radius:10px;background:var(--fill);position:relative;flex:none}
+.seg button{border:0;background:none;font-size:13px;font-weight:600;height:30px;padding:0 13px;border-radius:8px;cursor:pointer;color:var(--ink);position:relative;z-index:1;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface-solid);box-shadow:0 3px 8px rgba(0,0,0,.12),0 .5px 1px rgba(0,0,0,.08)}
+/* bộ lọc khu vực: 3 viên thuốc rời, bấm có hiệu ứng nhún */
+.large .seg{background:none;padding:0;gap:8px;border-radius:0}
+.large .seg button{height:36px;padding:0 18px;border-radius:99px;font-size:14px;font-weight:650;
+  background:var(--surface);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);
+  border:.5px solid var(--sep);box-shadow:0 2px 8px rgba(15,20,40,.06),inset 0 1px 0 rgba(255,255,255,.6);
+  transition:transform .2s cubic-bezier(.2,.9,.3,1.3),background .2s,color .2s,box-shadow .2s}
+.large .seg button:hover{transform:translateY(-1px)}
+.large .seg button:active{transform:scale(.93)}
+.large .seg button[aria-pressed="true"]{background:linear-gradient(145deg,#4F8DFF,#0A6CFF 60%,#6A5CF2);color:#fff;border-color:transparent;
+  box-shadow:0 6px 16px rgba(10,108,255,.35),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.12);text-shadow:0 1px 2px rgba(0,0,0,.2)}
+@media (max-width:380px){.large .seg button{padding:0 13px;font-size:13px}}
+button:focus-visible,.row:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.page{max-width:1280px;margin:0 auto;padding-block:4px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.large{padding:8px 4px 14px}
+.large .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2)}
+.large .eyebrow b{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-bg)}
+h1{margin:6px 0 0;font-family:var(--display);font-size:clamp(30px,6vw,40px);font-weight:800;letter-spacing:-.035em;line-height:1.05;text-wrap:balance}
+.large p{margin:6px 0 0;color:var(--ink2);font-size:14px}
+
+.secttl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:26px 4px 10px}
+.secttl h2{margin:0;font-family:var(--display);font-size:22px;font-weight:750;letter-spacing:-.025em}
+.secttl span{font-size:13px;color:var(--ink2)}
+
+/* widgets — kiểu thẻ ứng dụng: icon squircle gradient, nhãn góc phải, số lớn, sparkline */
+.widgets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.w{position:relative;overflow:hidden;border-radius:28px;padding:18px 18px 12px;display:flex;flex-direction:column;min-width:0;text-align:left;
+  background:var(--surface);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);border:.5px solid var(--sep);
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 14px 34px rgba(15,20,40,.08),0 2px 4px rgba(15,20,40,.04);transition:transform .25s cubic-bezier(.2,.9,.3,1.2),box-shadow .25s}
+.w::before{content:"";position:absolute;inset:-40% -20% auto auto;width:70%;aspect-ratio:1;border-radius:50%;background:var(--tint);opacity:.13;filter:blur(30px);pointer-events:none}
+.w:hover{transform:translateY(-3px);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 44px rgba(15,20,40,.12),0 3px 6px rgba(15,20,40,.05)}
+button.w{cursor:pointer}button.w:active{transform:scale(.98)}
+.w-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.app{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;color:#fff;flex:none;position:relative;overflow:hidden;
+  background:var(--grad);box-shadow:0 6px 14px color-mix(in srgb,var(--tint) 40%,transparent),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 4px rgba(0,0,0,.12);animation:bob 5s ease-in-out infinite}
+.app::after{content:"";position:absolute;inset:0 0 50% 0;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0))}
+.app svg{width:24px;height:24px;position:relative}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.tag{display:inline-flex;align-items:center;gap:4px;max-width:62%;height:24px;padding:0 9px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.tag.up{background:var(--green-bg);color:var(--green)}.tag.down{background:var(--red-bg);color:var(--red)}.tag.flat{background:var(--fill);color:var(--ink2)}.tag.info{background:color-mix(in srgb,var(--tint) 14%,transparent);color:var(--tint)}
+.w .lab{margin-top:16px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.w .big{margin-top:4px;font-family:var(--display);font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.w .big small{font-size:18px;font-weight:750;margin-left:2px;letter-spacing:-.02em}
+.w .foot{margin-top:6px;font-size:12.5px;color:var(--ink2);line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spk{display:block;width:100%;height:40px;margin-top:8px;overflow:visible}
+.spk path.ln{fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:0;animation:draw 1.4s ease-out both}
+.spk circle{animation:pop .4s 1.2s both}
+@keyframes draw{from{stroke-dashoffset:400}to{stroke-dashoffset:0}}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.spk circle{transform-box:fill-box;transform-origin:center}
+
+/* thanh viên thuốc bóng có % bên trong + vệt sáng chạy qua */
+.pill{position:relative;height:30px;border-radius:99px;padding:3px;background:var(--fill2);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.08),inset 0 -1px 0 rgba(255,255,255,.6),0 .5px 0 rgba(255,255,255,.5)}
+.pill i{position:relative;display:flex;align-items:center;justify-content:flex-end;height:100%;min-width:66px;padding-right:11px;border-radius:99px;overflow:hidden;
+  background:var(--pg);color:#fff;font-style:normal;font-weight:800;font-size:13.5px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -3px 5px rgba(0,0,0,.14),0 4px 10px var(--pglow);transform-origin:left center;animation:grow .9s cubic-bezier(.2,.9,.3,1) both;animation-delay:var(--d,0s)}
+.pill i::before{content:"";position:absolute;left:6px;right:6px;top:2px;height:44%;border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.05))}
+.pill i::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:35%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.65),transparent);transform:skewX(-18deg);animation:shine 3.6s ease-in-out infinite;animation-delay:calc(var(--d,0s) + 1s)}
+.pill i span{position:relative}
+@keyframes grow{from{transform:scaleX(.15);opacity:.4}to{transform:scaleX(1);opacity:1}}
+@keyframes shine{0%{left:-40%}55%,100%{left:120%}}
+.p-gold{--pg:linear-gradient(90deg,#FFD43B,#FFB300 60%,#F59300);--pglow:rgba(245,160,0,.35)}
+.p-silver{--pg:linear-gradient(90deg,#C9CDD3,#A9AEB6 60%,#9298A1);--pglow:rgba(130,136,146,.3)}
+.p-bronze{--pg:linear-gradient(90deg,#B98C5F,#CDA67A 70%,#E7D3A2);--pglow:rgba(185,140,95,.32)}
+.p-green{--pg:linear-gradient(90deg,#1FB35A,#34C759 60%,#7BE08F);--pglow:rgba(40,167,69,.3)}
+.p-blue{--pg:linear-gradient(90deg,#0A6CFF,#3D8BFF 55%,#8E8CFF);--pglow:rgba(10,108,255,.3)}
+.p-red{--pg:linear-gradient(90deg,#FF3B3B,#FF5560 55%,#FF7A9C);--pglow:rgba(255,59,59,.28)}
+.ringwrap{display:flex;align-items:center;gap:14px}
+.ring{width:74px;height:74px;flex:none}
+.ring circle{fill:none;stroke-linecap:round}
+.ring .bg{stroke:var(--fill)}
+.splitbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--fill);gap:2px}
+.chip{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip.up{background:var(--green-bg);color:var(--green)}.chip.down{background:var(--red-bg);color:var(--red)}.chip.flat{background:var(--fill);color:var(--ink2)}
+.tc-up{color:var(--green)}.tc-down{color:var(--red)}
+
+/* my shops */
+.mine{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mw{border-radius:26px;padding:18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;text-align:left;cursor:pointer;border:.5px solid var(--sep);transition:transform .15s}
+.mw:active{transform:scale(.985)}
+.mw .ring{width:104px;height:104px}
+.mw h3{margin:0;font-family:var(--display);font-size:20px;font-weight:750;letter-spacing:-.025em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue);letter-spacing:0}
+.mw .sub{font-size:13px;color:var(--ink2);margin-top:2px}
+.mw .alert{margin-top:6px}
+.mw[aria-current="true"]{box-shadow:0 0 0 1.5px var(--blue),var(--shadow)}
+.mw{align-items:start;transition:transform .2s}
+.mw:hover{transform:translateY(-2px)}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.kv div{background:var(--fill2);border-radius:12px;padding:8px 10px;min-width:0}
+.kv span{display:block;font-size:11px;color:var(--ink2);font-weight:600}
+.kv b{display:block;font-size:15px;font-weight:700;margin-top:1px;white-space:nowrap}
+.spark{display:flex;align-items:flex-end;gap:6px;height:38px;margin-top:12px}
+.spark i.g{background:linear-gradient(180deg,#34C759,#17A764)}.spark i.r{background:linear-gradient(180deg,#FF6B5E,#FF3B30)}
+.spark i{flex:1;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--blue),var(--teal));opacity:.9;min-height:3px}
+.spark-l{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:center;font-size:10.5px;color:var(--ink2);margin-top:4px}
+.spark-l b{display:block;font-size:11.5px;font-weight:700;color:var(--ink)}
+
+/* split layout */
+.split{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px)}
+.search{display:flex;align-items:center;gap:8px;height:38px;border-radius:12px;background:var(--fill);padding:0 10px;margin-bottom:10px}
+.search svg{width:17px;height:17px;color:var(--ink2);flex:none}
+.search input{border:0;background:none;outline:none;flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink)}
+.search input::placeholder{color:var(--ink2)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.toolbar .note{font-size:12.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap}
+.toolbar .note i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+.list{border-radius:22px;overflow:hidden}
+.row{display:grid;grid-template-columns:34px minmax(0,1fr) auto 14px;gap:12px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:11px 14px;cursor:pointer;position:relative}
+.row+.row::before{content:"";position:absolute;top:0;left:60px;right:0;height:.5px;background:var(--sep)}
+.row:hover{background:var(--fill2)}
+.row[aria-current="true"]{background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.row.mine-r .nm{color:var(--blue)}
+.rk{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:750;background:var(--fill);color:var(--ink2)}
+.rk.r1{background:linear-gradient(145deg,#FFD24A,#F0A500);color:#4A3200}.rk.r2{background:linear-gradient(145deg,#E4E7EC,#AEB4BF);color:#2A2E35}.rk.r3{background:linear-gradient(145deg,#F2B78A,#C77B45);color:#3E2210}
+.mid{min-width:0}
+.nm{font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.meta{font-size:12.5px;color:var(--ink2);margin-top:1px}
+.bar{position:relative;height:6px;border-radius:99px;background:var(--fill);margin-top:7px}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:99px}
+.bar u{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:2px;background:var(--ink);opacity:.45}
+.rt{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.rt b{font-family:var(--display);font-size:19px;font-weight:750;letter-spacing:-.02em}
+.row .pill{margin-top:9px}
+.row{padding:12px 14px}
+[hidden]{display:none!important}
+.mid{display:block}
+.mid .meta{display:block}
+.mid .pill{display:block;height:22px;padding:2px;margin-top:8px}
+.mid .pill i{min-width:54px;padding-right:9px;font-size:12px}
+.mid .pill i::before{top:1px;height:40%}
+.row .rt{align-self:center}
+.brandcard .pill{height:28px}.brandcard .pill i{font-size:12.5px;min-width:60px}
+.brandcard .br{height:46px}
+.chev{width:9px;height:14px;color:var(--ink3)}
+.row.nodata{cursor:default;opacity:.55}.row.nodata:hover{background:none}
+/* đầu bảng xếp hạng: 1 thẻ chứa tiêu đề, tìm kiếm, sắp xếp, chú thích */
+.rankhead{border-radius:24px;padding:16px;margin-bottom:12px}
+.rh-top h2{margin:0;font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.rh-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 12px;font-size:13px;color:var(--ink2)}
+.rankhead .search{margin-bottom:10px}
+.rankhead .toolbar{flex-direction:column;align-items:stretch;gap:10px;margin:0}
+.rankhead .seg{display:flex;width:100%}
+.rankhead .seg button{flex:1;padding:0 6px;font-size:13px}
+.rankhead .note{gap:6px 14px;font-size:12px}
+.foot-note{font-size:12.5px;color:var(--ink2);margin:10px 6px 0;line-height:1.5}
+
+/* detail */
+.detail{border-radius:26px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.d-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.d-head h3{margin:0;font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.d-head .sub{font-size:13px;color:var(--ink2);margin-top:3px}
+.x{width:30px;height:30px;border-radius:50%;border:0;background:var(--fill);display:grid;place-items:center;cursor:pointer;flex:none}
+.x svg{width:12px;height:12px;color:var(--ink2)}
+.donutrow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:center}
+.donut{width:150px;height:150px}
+.donut text{fill:var(--ink);font-family:var(--display)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stats div{background:var(--fill2);border-radius:14px;padding:9px 11px;min-width:0}
+.stats span{display:block;font-size:11.5px;color:var(--ink2);font-weight:600}
+.stats b{display:block;font-size:16px;font-weight:700;margin-top:1px;white-space:nowrap}
+.grp{border-radius:18px;background:var(--fill2);overflow:hidden}
+.grp-t{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;margin:0 4px 6px}
+.br{display:grid;grid-template-columns:96px minmax(0,1fr) 50px 64px;gap:10px;align-items:center;padding:0 12px;height:38px;position:relative;font-size:14px}
+.br+.br::before{content:"";position:absolute;top:0;left:12px;right:0;height:.5px;background:var(--sep)}
+.br .n{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap;overflow:hidden}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.trk{height:6px;border-radius:99px;background:var(--fill);overflow:hidden}
+.trk i{display:block;height:100%;border-radius:99px}
+.br .p{text-align:right;font-weight:700}
+.br .m{text-align:right;font-size:12px;color:var(--ink2)}
+.br.hl{background:color-mix(in srgb,var(--blue) 7%,transparent)}
+.weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;height:140px;padding:12px 12px 10px}
+.wk{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%}
+.wk .col{width:100%;max-width:46px;border-radius:9px 9px 4px 4px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;background:var(--fill)}
+.wk .col i{display:block}
+.wk b{font-size:12.5px;font-weight:700}
+.wk span{font-size:11px;color:var(--ink2)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);padding:0 12px 12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* bottom sheet (phone) */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:40;opacity:0;transition:opacity .25s}
+.scrim.on{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:92%;overflow-y:auto;overscroll-behavior:contain;border-radius:28px 28px 0 0;
+  background:var(--bg);padding-top:8px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.9,.25,1);box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+.sheet.on{transform:none}
+.grab{width:38px;height:5px;border-radius:99px;background:var(--ink3);margin:0 auto 10px}
+.sheet .detail{background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:6px 6px 0}
+
+/* brands */
+.brandcard{border-radius:22px;padding:6px 0}
+.brandcard .br{grid-template-columns:28px 104px minmax(0,1fr) 84px;height:50px;padding:0 16px}
+.brandcard .br+.br::before{left:58px}
+.mini-rk{font-size:12px;font-weight:700;color:var(--ink2);text-align:center}
+.summary{margin:10px 6px 0;font-size:14px;line-height:1.5}
+.src{margin:30px 6px 0;font-size:12px;color:var(--ink3);line-height:1.6;text-align:center}
+
+@media (max-width:1100px){.split{grid-template-columns:1fr}.side{display:none}}
+@media (min-width:1101px){.sheet,.scrim{display:none}
+  /* laptop: thẻ shop xếp 2 cột, bảng hãng chia 2 cột, panel chi tiết cuộn riêng */
+  .list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;box-shadow:none;overflow:visible}
+  .list .row{background:var(--surface);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);border:.5px solid var(--sep);border-radius:18px;box-shadow:var(--shadow);padding:12px;grid-template-columns:30px minmax(0,1fr) auto 10px;gap:10px;transition:transform .2s,box-shadow .2s}
+  .list .row+.row::before{display:none}
+  .list .row:hover{transform:translateY(-2px);background:var(--surface)}
+  .list .row[aria-current="true"]{border-color:var(--blue);box-shadow:0 0 0 1.5px var(--blue),var(--shadow)}
+  .list .row.nodata{box-shadow:none}
+  .list .rk{width:28px;height:28px;font-size:12.5px}
+  .list .nm{font-size:14.5px}
+  .side{top:calc(env(safe-area-inset-top,0px) + 62px)}
+  .side .detail{max-height:calc(100vh - 84px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+  .widgets{gap:14px}
+  .w{padding:16px 16px 10px;min-height:196px}
+  .w .big{font-size:34px}
+  .brandcard{column-count:2;column-gap:0;padding:6px 0}
+  .brandcard .br{break-inside:avoid}
+  .brandcard .br:nth-child(n+7)::before{left:16px}
+}
+@media (max-width:980px){.widgets{grid-template-columns:repeat(2,minmax(0,1fr))}.mine{grid-template-columns:1fr}}
+@media (max-width:560px){
+  .nav-title{display:none}.nav-in{justify-content:center}
+  .w{padding:14px;min-height:148px;border-radius:22px}.w .big{font-size:27px}
+  .ring{width:62px;height:62px}
+  .mw{grid-template-columns:1fr;padding:16px}.mw .top{display:flex;gap:14px;align-items:center}.mw .ring{width:84px;height:84px}
+  .donutrow{grid-template-columns:120px minmax(0,1fr)}.donut{width:120px;height:120px}
+  .stats b{font-size:15px}
+  .br{grid-template-columns:86px minmax(0,1fr) 46px 56px;gap:8px;font-size:13.5px}
+  .brandcard .br{grid-template-columns:22px 82px minmax(0,1fr) 62px;padding:0 12px}
+  .widgets{gap:12px}.w{padding:14px 14px 10px;border-radius:24px}.app{width:42px;height:42px;border-radius:13px}.app svg{width:20px;height:20px}.w .lab{margin-top:12px;font-size:10px}.w .big{font-size:29px}.w .big small{font-size:15px}.tag{font-size:10.5px;padding:0 7px;height:22px}
+  .brandcard .br+.br::before{left:42px}
+}
+@media (max-width:380px){.seg button{padding:0 10px;font-size:12.5px}.kv{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* điện thoại gọn kiểu One UI: thẻ hero + 1 thẻ nhóm dạng danh sách, thẻ shop ngang */
+@media (max-width:560px){
+  .large .seg button{height:34px;padding:0 15px;font-size:13.5px}
+  .large{padding:2px 4px 10px}
+  h1{font-size:30px}
+  .widgets{grid-template-columns:1fr;gap:0}
+  .w:nth-child(1){margin-bottom:12px;min-height:0;padding:16px 18px 10px}
+  .w:nth-child(1) .big{font-size:44px}
+  .w:nth-child(1) .foot{white-space:normal}
+  .w:nth-child(1) .spk{height:46px}
+  .w:nth-child(n+2){min-height:0;border-radius:0;padding:12px 16px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;grid-template-areas:"ic lab big" "ic tag big" "ic foot big";column-gap:12px;align-items:center;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 8px 20px rgba(15,20,40,.05)}
+  .w:nth-child(n+2)::before,.w:nth-child(n+2) .spk{display:none}
+  .w:nth-child(2){border-radius:22px 22px 0 0}
+  .w:nth-child(4){border-radius:0 0 22px 22px}
+  .w:nth-child(n+3){border-top-width:0;position:relative}
+  .w:nth-child(n+3)::after{content:"";position:absolute;top:0;left:70px;right:16px;height:.5px;background:var(--sep)}
+  .w:nth-child(n+2) .w-top{display:contents}
+  .w:nth-child(n+2) .app{grid-area:ic;width:42px;height:42px;border-radius:13px;animation:none}
+  .w:nth-child(n+2) .tag{grid-area:tag;background:none;padding:0;height:auto;max-width:none;font-size:13px;font-weight:650;color:var(--ink);justify-self:start}
+  .w:nth-child(2) .tag{color:var(--ink2);font-weight:500}
+  .w:nth-child(n+2) .lab{grid-area:lab;margin:0;font-size:10.5px}
+  .w:nth-child(n+2) .big{grid-area:big;margin:0;font-size:26px;text-align:right}
+  .w:nth-child(n+2) .foot{grid-area:foot;margin:0;font-size:12px}
+  .w:hover{transform:none}
+  .secttl{margin-top:22px}
+  .mw{grid-template-columns:auto minmax(0,1fr);gap:12px;padding:14px;border-radius:22px}
+  .mw .top{display:block}
+  .mw .ring{width:80px;height:80px}
+  .mw h3{font-size:17px;gap:6px}
+  .kv{margin-top:8px;gap:6px}
+  .kv div{padding:6px 8px}
+  .kv b{font-size:14px}
+  .spark{height:30px;margin-top:8px;gap:4px}
+  .spark-l{margin-top:2px}
+}
+/* thẻ shop lớn: số tháng + tăng/giảm + biểu đồ tuần */
+.list{display:grid;grid-template-columns:1fr;gap:10px;padding:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;box-shadow:none;overflow:visible}
+.list .row.scard{display:block;padding:14px 16px 12px;border-radius:22px;background:var(--surface);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);border:.5px solid var(--sep);box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.list .row.scard::before{display:none}
+.list .row.scard:hover{transform:translateY(-2px);background:var(--surface)}
+.list .row.scard:active{transform:scale(.985)}
+.list .row.scard[aria-current="true"]{box-shadow:0 0 0 1.5px var(--blue),var(--shadow)}
+.sc-h{display:flex;align-items:center;gap:10px}
+.sc-t{flex:1;min-width:0;display:block}
+.alert{display:inline-flex;align-items:center;align-self:flex-start;height:20px;padding:0 8px;margin-top:5px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.alert.up{background:var(--green-bg);color:var(--green)}
+.alert.a1{background:var(--orange-bg);color:var(--orange)}
+.alert.a2,.alert.a3{background:var(--red-bg);color:var(--red)}
+.alert.a3{box-shadow:0 0 0 1px var(--red) inset}
+.sc-t{display:flex;flex-direction:column;align-items:flex-start}
+.sc-t .meta{display:block}
+.sc-v{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
+.sc-v b{font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.sc-c{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;height:86px;align-items:end;margin-top:10px;padding:0 2px}
+.sc-w{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;position:relative;z-index:1}
+.sc-w b{font-size:11.5px;font-weight:700;height:14px;line-height:14px}
+.sc-w i{display:block;width:100%;max-width:48px;border-radius:8px 8px 3px 3px;background:var(--pg);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px var(--pglow)}
+.sc-w em{font-style:normal;font-size:10.5px;color:var(--ink2);height:14px;line-height:14px}
+.sc-base{position:absolute;left:0;right:0;border-top:1.5px dashed var(--ink3);z-index:0}
+.sc-f{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:.5px solid var(--sep);font-size:12px;color:var(--ink2)}
+.sc-go{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--blue)}
+.sc-go svg{width:7px;height:11px}
+.list .row.nodata{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;padding:12px 16px;border-radius:22px;background:var(--surface);border:.5px solid var(--sep)}
+@media (min-width:1101px){.list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.list .mw{grid-template-columns:auto minmax(0,1fr);padding:16px;gap:14px}.list .mw .ring{width:92px;height:92px}.list .mw h3{font-size:18px}.list .mw .kv b{font-size:13.5px}}
+/* đầu trang: gom tiêu đề + bộ lọc vào 1 thẻ */
+.nav{display:none}
+.large{padding:16px 18px 16px;border-radius:28px;margin:6px 0 14px}
+.large .seg{display:flex;width:100%;margin-top:14px}
+.large .seg button{flex:1;padding:0 8px}
+.settled .pill i,.settled .spk path.ln,.settled .spk circle,.settled .app{animation:none}
+.settled .pill i::after{animation:shine 3.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===== Thẻ shop v3: widget kính — đồng hồ thị phần + 2 ô chỉ số + tiến độ tuần ===== */
+.mw.gw{display:flex;flex-direction:column;align-items:stretch;gap:14px;width:100%;padding:16px;border-radius:28px;text-align:left;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.mw.gw::before{content:"";position:absolute;inset:-30% -10% auto auto;width:60%;aspect-ratio:1;border-radius:50%;background:var(--gwt,var(--blue));opacity:.13;filter:blur(36px);pointer-events:none}
+.mw.gw>*{position:relative}
+.gw-eye{font-size:13px;font-weight:500;color:var(--ink2)}
+.gw-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mw.gw .gw-title h3{margin:0;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.12}
+.mw.gw.gw-full .gw-title h3{font-size:23px}
+.gw-title .chip{flex:none}
+.mw.gw .sub{margin:3px 0 0;font-size:12.5px}
+.mw.gw .alert{margin-top:6px}
+.gw-mid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:12px;align-items:center}
+.gauge{display:block;width:100%;height:auto;max-width:200px;margin:0 auto;overflow:visible}
+.gw-tiles{display:grid;gap:10px}
+.gw-tile{min-width:0;padding:10px 12px;border-radius:18px;background:color-mix(in srgb,var(--surface-solid) 46%,transparent);border:.5px solid var(--sep);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.gw-tl{display:flex;align-items:center;gap:8px}
+.gw-ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;flex:none;color:#fff;background:var(--ic)}
+.gw-ic svg{width:17px;height:17px}
+.gw-lb{font-size:12px;font-weight:650;line-height:1.2}
+.gw-lb small{display:block;font-size:11px;font-weight:500;color:var(--ink2)}
+.gw-tile b{display:block;margin-top:6px;font-family:var(--display);font-size:21px;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.gw-cap{display:flex;flex-direction:column;gap:2px;padding-top:12px;border-top:.5px solid var(--sep)}
+.gw-cap b{font-size:15px;font-weight:700}
+.gw-cap span{font-size:12px;color:var(--ink2)}
+.mw.gw:not(.gw-full) .gw-cap b{display:none}
+.gw-wt{margin:0 0 8px 2px;font-size:14px;font-weight:650;color:var(--ink2)}
+.gw-rows{display:grid;gap:8px}
+.gw-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 14px 4px 12px;border-radius:99px;background:var(--fill2);border:.5px solid var(--sep)}
+.gw-row>b{font-size:13px;font-weight:700;color:var(--ink2)}
+.gw-row>em{font-style:normal;font-size:12px;color:var(--ink2);white-space:nowrap}
+.gw-row .pill{height:26px}
+.gw-row .pill i{min-width:58px;font-size:12.5px}
+@media (min-width:700px){.mine,.list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (hover:hover){.mw.gw:hover{transform:translateY(-2px)}}
+@media (hover:none){.w:hover,.mw:hover{transform:none}}
+@media (max-width:560px){
+  .mw.gw{padding:14px;border-radius:24px}
+  .mw.gw .gw-title h3{font-size:18px}.mw.gw.gw-full .gw-title h3{font-size:21px}
+  .gw-tile{padding:9px 10px}.gw-tile b{font-size:19px}
+  .list .mw.gw{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface-solid)}
+  .aurora i{filter:blur(60px)}
+}
+@media (max-width:360px){
+  .gw-mid{grid-template-columns:1fr}.gw-tiles{grid-template-columns:1fr 1fr}.gw-tile b{font-size:17px}
+}
+
+/* ===== Chi tiết shop v3 + huy hiệu hãng ===== */
+.lg{display:inline-flex;align-items:center;justify-content:center;height:26px;max-width:100%;padding:0 9px;border-radius:9px;font-size:11.5px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:color-mix(in srgb,var(--c) 72%,var(--ink));background:color-mix(in srgb,var(--c) 14%,transparent);border:.5px solid color-mix(in srgb,var(--c) 30%,transparent)}
+.lg.hi{color:#fff;background:var(--c);border-color:transparent;box-shadow:0 3px 8px color-mix(in srgb,var(--c) 35%,transparent)}
+.lg.img{background:#fff;border:.5px solid var(--sep);padding:0 7px}
+.lg img{display:block;height:18px;max-width:100%;object-fit:contain}
+.brandcard .lg{padding:0 6px;font-size:11px}
+.d-head .gw-eye{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:2px}
+.detail .grp-t{text-transform:none;font-size:14px;font-weight:650;letter-spacing:0;margin:0 2px 8px}
+.dgrp{padding:4px 0}
+.dbr{display:grid;grid-template-columns:82px minmax(0,1fr) 56px;gap:10px;align-items:center;padding:5px 12px}
+.dbr.hl{background:color-mix(in srgb,var(--blue) 7%,transparent)}
+.dbr .pill{height:24px}.dbr .pill i{min-width:52px;font-size:12px}
+.dbr .m{text-align:right;font-size:12px;color:var(--ink2)}
+.gw-r{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25}
+.gw-r em{font-style:normal;font-size:12px;color:var(--ink2);white-space:nowrap}
+.gw-r small{font-size:10.5px;color:var(--ink2);white-space:nowrap}
+.detail .gw-row{padding:5px 12px}
+.dins{margin:0 4px}
+@media (max-width:360px){.dbr{grid-template-columns:70px minmax(0,1fr) 50px;gap:8px;padding:5px 10px}.lg{font-size:10.5px;padding:0 6px}.detail .gw-mid{grid-template-columns:1fr}.detail .gw-tiles{grid-template-columns:1fr 1fr}}
+.sheet .detail{padding-top:16px}
+
+/* đồng hồ chạy từ 0 đến mức hiện tại, chờ cuộn tới mới chạy */
+.gauge .garc{animation:garc 1s cubic-bezier(.215,.61,.355,1) both}
+.gauge .gknob{animation:gknob 1s cubic-bezier(.215,.61,.355,1) both;transform-origin:85px 85px}
+@keyframes garc{from{stroke-dashoffset:var(--gv)}to{stroke-dashoffset:0}}
+@keyframes gknob{from{transform:rotate(calc(var(--ga) * -1))}to{transform:rotate(0deg)}}
+.gauge:not(.go) .garc,.gauge:not(.go) .gknob{animation-play-state:paused}
+.gauge.still .garc,.gauge.still .gknob{animation:none}
+/* bảng xếp hạng: nút sắp xếp và nhãn thành viên thuốc rời, ô chọn dạng danh sách thả xuống */
+.rankhead .seg{display:flex;flex-wrap:wrap;gap:8px;width:100%;padding:0;background:none;border-radius:0}
+.rankhead .seg button{flex:1 1 auto;height:36px;padding:0 14px;border-radius:99px;font-size:13.5px;font-weight:650;background:var(--surface-solid);border:.5px solid var(--sep);box-shadow:0 2px 8px rgba(15,20,40,.06);transition:transform .2s cubic-bezier(.2,.9,.3,1.3),background .2s}
+.rankhead .seg button:active{transform:scale(.94)}
+.rankhead .seg button[aria-pressed="true"]{background:linear-gradient(145deg,#4F8DFF,#0A6CFF 60%,#6A5CF2);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(10,108,255,.3),inset 0 1px 0 rgba(255,255,255,.4)}
+.rankhead .note span,.rh-sub>span:not(.alert){display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:99px;background:var(--fill2);font-size:12.5px;font-weight:600;white-space:nowrap}
+.pick{position:relative;display:block;margin-bottom:10px}
+.pick select{appearance:none;-webkit-appearance:none;width:100%;height:42px;border-radius:99px;border:.5px solid var(--sep);background:var(--fill);color:var(--ink);font:inherit;font-size:16px;font-weight:600;padding:0 42px 0 18px;cursor:pointer;text-overflow:ellipsis}
+.pick svg{position:absolute;right:17px;top:50%;width:13px;height:9px;transform:translateY(-50%);color:var(--ink2);pointer-events:none}
+.secttl .pick-sm{margin:0;flex:0 1 auto;min-width:0;max-width:62%}
+.pick-sm select{height:34px;width:auto;max-width:100%;font-size:14px;padding:0 32px 0 14px}
+.pick-sm svg{right:13px}
+.mine.one{grid-template-columns:minmax(0,640px)}
+.pick select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.dd{position:relative;min-width:0}
+.dd-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:42px;border-radius:99px;border:.5px solid var(--sep);background:var(--fill);color:var(--ink);font-size:15.5px;font-weight:650;padding:0 14px 0 18px;cursor:pointer;text-align:left}
+.dd-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-btn svg{width:13px;height:9px;flex:none;color:var(--ink2);transition:transform .2s}
+.dd-btn[aria-expanded="true"]{box-shadow:0 0 0 1.5px var(--blue)}.dd-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.dd-panel{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:50;border-radius:22px;padding:8px;background:var(--surface-solid);border:.5px solid var(--sep);box-shadow:0 20px 50px rgba(15,20,40,.22),0 2px 6px rgba(15,20,40,.08)}
+.dd-sm{flex:0 1 auto;max-width:62%}.dd-sm .dd-btn{height:34px;width:auto;font-size:14px;padding:0 12px 0 14px}
+.dd-sm .dd-panel{left:auto;right:0;width:min(340px,calc(100vw - 32px))}
+.dd-search{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:99px;background:var(--fill);margin-bottom:6px}
+.dd-search svg{width:16px;height:16px;color:var(--ink2);flex:none}
+.dd-search input{border:0;background:none;outline:none;flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink)}
+.dd-list{max-height:min(52vh,360px);overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:2px}
+.dd-g{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);padding:10px 12px 4px}
+.dd-opt{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:40px;padding:0 14px;border:0;border-radius:99px;background:none;text-align:left;cursor:pointer;font-size:15px;font-weight:600}
+.dd-opt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-opt em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.dd-opt:hover{background:var(--fill2)}
+.dd-opt[aria-selected="true"]{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue)}
+.dd-opt[aria-selected="true"] em{color:inherit;opacity:.8}
+.dd-empty{padding:14px;text-align:center;color:var(--ink2);font-size:13.5px}
+.rankhead .dd{margin-bottom:10px}
+.secttl,.rankhead{position:relative;z-index:6}
+.secttl:has(.dd){align-items:center}
+</style>
+
+<div class="aurora" aria-hidden="true">
+  <i style="width:620px;height:620px;left:-14%;top:-16%;background:var(--blob1)"></i>
+  <i style="width:520px;height:520px;left:48%;top:-12%;background:var(--blob2)"></i>
+  <i style="width:600px;height:600px;right:-16%;top:40%;background:var(--blob3)"></i>
+</div>
+
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <span class="nav-title">Thị phần Haier + Aqua</span>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="large glass">
+    <span class="eyebrow"><b></b>IHS tháng 10 · số 01–25/10/2026</span>
+    <h1>Thị phần Haier + Aqua</h1>
+    <p id="lead"></p>
+    <div class="seg" role="group" aria-label="Lọc khu vực">
+      <button type="button" data-f="all" aria-pressed="true">Tất cả</button>
+      <button type="button" data-f="LAN" aria-pressed="false">Long An</button>
+      <button type="button" data-f="HCM" aria-pressed="false">TP.HCM</button>
+    </div>
+  </div>
+
+  <section class="widgets" id="widgets"></section>
+
+  <div class="secttl" id="mineTtl"><h2 id="mineH">Shop của bạn</h2><div class="dd dd-sm" id="ddMine"><button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false"><span class="dd-val"></span><svg viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5l5 5 5-5"/></svg></button><div class="dd-panel" role="listbox" hidden><label class="dd-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Tìm shop bạn phụ trách" autocomplete="off" aria-label="Tìm shop hoặc khu"></label><div class="dd-list"></div></div></div></div>
+  <section class="mine" id="mine"></section>
+
+  <div class="split">
+    <section>
+      <div class="rankhead glass"><div class="rh-top"><h2>Xếp hạng shop</h2></div><div class="rh-sub" id="cnt"></div>
+      <div class="dd" id="ddQ"><button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false"><span class="dd-val"></span><svg viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5l5 5 5-5"/></svg></button><div class="dd-panel" role="listbox" hidden><label class="dd-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Tìm shop hoặc khu" autocomplete="off" aria-label="Tìm shop hoặc khu"></label><div class="dd-list"></div></div></div>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Sắp xếp" id="sorts">
+          <button type="button" data-s="share" aria-pressed="true">Thị phần</button>
+          <button type="button" data-s="delta" aria-pressed="false">Tăng/giảm</button>
+          <button type="button" data-s="total" aria-pressed="false">Doanh số</button>
+          <button type="button" data-s="warn" aria-pressed="false">Cảnh báo</button>
+        </div>
+        <div class="note"><span><i style="background:linear-gradient(90deg,#1FB35A,#7BE08F)"></i>Tăng so với T9</span><span><i style="background:linear-gradient(90deg,#FF3B3B,#FF7A9C)"></i>Giảm</span><span><i style="background:linear-gradient(90deg,#C9CDD3,#9298A1)"></i>Đi ngang</span></div>
+      </div>
+      </div>
+      <div class="list glass" id="list"></div>
+      <p class="foot-note">Quy tắc màu: xanh lá là tăng, đỏ là giảm, xám là đi ngang so với tháng 9 (áp dụng cho thanh, nhãn điểm và các thẻ). Mức tối thiểu cần duy trì là 15% (thị phần tháng 10): shop dưới mức này có nhãn đỏ "Dưới mức 15%" và được xếp lên đầu khi sắp xếp theo Cảnh báo. Nhãn xu hướng so sánh thị phần các tuần đủ ngày (tuần 2, 3, 4); chênh dưới 1 điểm coi là đi ngang nên không gắn nhãn, còn tuần 1 chỉ có 4 ngày nên chỉ để tham khảo. Đỏ: giảm 2 tuần liền. Cam: tuần cuối giảm. Xanh: tăng hoặc hồi phục. Mỗi thẻ shop: vòng tròn là thị phần tháng 10 (xanh là tăng, đỏ là giảm so với T9), cột là thị phần từng tuần (xanh là tăng, đỏ là giảm so với tuần trước). Huy chương vàng, bạc, đồng chỉ nằm ở số hạng top 3. Hạng tính trên cả 31 shop có số. "Điểm" là điểm phần trăm so với tháng 9.</p>
+    </section>
+    <aside class="side"><div class="detail glass" id="side"></div></aside>
+  </div>
+
+  <div class="secttl"><h2>Hãng nào đang lấy khách</h2><span id="bsub"></span></div>
+  <section class="brandcard glass" id="brands"></section>
+  <p class="summary" id="summary"></p>
+
+  <p class="src">Nguồn: file "IHS 1-25/10" của chị Nhàn. Tháng 10: tab IHS T10 (01–25/10). Tháng 9: tab IHS TỔNG T7.T8.T9 (cả tháng), giống file Thị phần IHS.<br>Thị phần = doanh số Haier + Aqua ÷ tổng doanh số IHS của shop. "Khác" gồm Casper, Comfee, Hitachi, Sharp, Hisense và các hãng nhỏ.</p>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Chi tiết shop" hidden><div class="grab"></div><div class="detail" id="sheetBody"></div></div>
+
+<script>
+const D={"shops": [{"name": "98 Nguyễn Tri Phương", "khu": "ADO", "reg": "HCM", "chain": "ĐML", "total": 3512425800, "brands": {"Haier": 267117000, "Aqua": 406588000, "Daikin": 39181000, "Electrolux": 214714000, "LG": 968411000, "Panasonic": 360648000, "Samsung": 191083000, "Sony": 156190000, "TCL": 111758000, "Toshiba": 443948000, "Khác": 352787800}, "weeks": [{"h": 80774000, "a": 84634500, "t": 442841000}, {"h": 20457000, "a": 69932000, "t": 758630000}, {"h": 143044000, "a": 147281500, "t": 1083213000}, {"h": 22842000, "a": 104740000, "t": 1227741800}], "t9": 27.582507510062204}, {"name": "15 Phạm Hùng", "khu": "Bình Chánh", "reg": "HCM", "chain": "ĐML", "total": 2877242800, "brands": {"Haier": 116671000, "Aqua": 491245500, "Daikin": 135829000, "Electrolux": 42481500, "LG": 394843500, "Panasonic": 357231800, "Samsung": 184320000, "Sony": 46491000, "TCL": 116545000, "Toshiba": 314645500, "Khác": 676939000}, "weeks": [{"h": 12840000, "a": 15840000, "t": 335772300}, {"h": 32871000, "a": 92487000, "t": 711020000}, {"h": 48470000, "a": 176321000, "t": 1015103000}, {"h": 22490000, "a": 206597500, "t": 815347500}], "t9": 21.95790244764606}, {"name": "2148 Vĩnh Lộc", "khu": "Bình Chánh", "reg": "HCM", "chain": "ĐML", "total": 2503423200, "brands": {"Haier": 256923000, "Aqua": 490052500, "Daikin": 68531000, "Electrolux": 8680000, "LG": 146325500, "Panasonic": 294013500, "Samsung": 196240000, "Sony": 76031000, "TCL": 102132500, "Toshiba": 527487200, "Khác": 337007000}, "weeks": [{"h": 0, "a": 111898500, "t": 506621700}, {"h": 60732000, "a": 250065000, "t": 759359000}, {"h": 142640500, "a": 30500000, "t": 746860000}, {"h": 53550500, "a": 97589000, "t": 490582500}], "t9": 31.148436600614595}, {"name": "Bình Hưng", "khu": "Bình Chánh", "reg": "HCM", "chain": "ĐML", "total": 3600378700, "brands": {"Haier": 182083000, "Aqua": 380539500, "Daikin": 100066000, "Electrolux": 219058000, "LG": 637705500, "Panasonic": 560463200, "Samsung": 432336000, "Sony": 36472000, "TCL": 176952000, "Toshiba": 345504000, "Khác": 529199500}, "weeks": [{"h": 11290000, "a": 69010000, "t": 541625200}, {"h": 75941000, "a": 112396500, "t": 1067246000}, {"h": 65170000, "a": 77595000, "t": 948941500}, {"h": 29682000, "a": 121538000, "t": 1042566000}], "t9": 11.238245773352002}, {"name": "C2/5 Quách Điêu", "khu": "Bình Chánh", "reg": "HCM", "chain": "ĐML", "total": 2733972300, "brands": {"Haier": 351004000, "Aqua": 307897000, "Daikin": 102329500, "Electrolux": 91758500, "LG": 656233300, "Panasonic": 295977000, "Samsung": 245702500, "Sony": 0, "TCL": 37182000, "Toshiba": 455750000, "Khác": 190138500}, "weeks": [{"h": 23580000, "a": 54190000, "t": 457321500}, {"h": 25641000, "a": 80214000, "t": 667027000}, {"h": 131642000, "a": 99647000, "t": 846339800}, {"h": 170141000, "a": 73846000, "t": 763284000}], "t9": 25.850755233407156}, {"name": "D16/40/1A Hưng Long", "khu": "Bình Chánh", "reg": "HCM", "chain": "ĐML", "total": 2238503300, "brands": {"Haier": 221667000, "Aqua": 498418500, "Daikin": 11090000, "Electrolux": 21430500, "LG": 133295000, "Panasonic": 408595500, "Samsung": 234113500, "Sony": 110384000, "TCL": 136041000, "Toshiba": 280634000, "Khác": 182834300}, "weeks": [{"h": 43533000, "a": 125937000, "t": 385986500}, {"h": 60031000, "a": 173979000, "t": 613066000}, {"h": 20480000, "a": 121420000, "t": 499142300}, {"h": 97623000, "a": 77082500, "t": 740308500}], "t9": 30.844115507602332}, {"name": "Tân Túc", "khu": "Bình Chánh", "reg": "HCM", "chain": "ĐML", "total": 1840395500, "brands": {"Haier": 374325500, "Aqua": 259570000, "Daikin": 15190500, "Electrolux": 37953500, "LG": 235971600, "Panasonic": 432761400, "Samsung": 143117000, "Sony": 66370000, "TCL": 45743000, "Toshiba": 78296000, "Khác": 151097000}, "weeks": [{"h": 54260000, "a": 51490000, "t": 249828000}, {"h": 156657000, "a": 82443000, "t": 605765100}, {"h": 79701000, "a": 89318000, "t": 552756200}, {"h": 83707500, "a": 36319000, "t": 432046200}], "t9": 41.37578353591737}, {"name": "106 Nguyễn Thị Tú", "khu": "Bình Tân", "reg": "HCM", "chain": "ĐML", "total": 3983562500, "brands": {"Haier": 274637500, "Aqua": 386879000, "Daikin": 105020000, "Electrolux": 115417000, "LG": 468464000, "Panasonic": 483214000, "Samsung": 1120522000, "Sony": 52571000, "TCL": 56380000, "Toshiba": 464846500, "Khác": 455611500}, "weeks": [{"h": 26115500, "a": 49809500, "t": 615134500}, {"h": 18162000, "a": 104016000, "t": 1044342500}, {"h": 69449000, "a": 138900000, "t": 1253889000}, {"h": 160911000, "a": 94153500, "t": 1070196500}], "t9": 21.977481754958177}, {"name": "442 Hồ Học Lãm", "khu": "Bình Tân", "reg": "HCM", "chain": "ĐML", "total": 2754459299, "brands": {"Haier": 46532000, "Aqua": 404863500, "Daikin": 122518000, "Electrolux": 88041000, "LG": 201970000, "Panasonic": 834500500, "Samsung": 172877999, "Sony": 90091000, "TCL": 152168000, "Toshiba": 302681100, "Khác": 338216200}, "weeks": [{"h": 0, "a": 84776000, "t": 613984600}, {"h": 19152000, "a": 66520500, "t": 720772000}, {"h": 11990000, "a": 148931000, "t": 738740699}, {"h": 15390000, "a": 104636000, "t": 680962000}], "t9": 22.762849780843197}, {"name": "740 Tân Kỳ Tân Quý", "khu": "Bình Tân", "reg": "HCM", "chain": "ĐML", "total": 2486311100, "brands": {"Haier": 118085000, "Aqua": 196307000, "Daikin": 47765000, "Electrolux": 94645000, "LG": 417015500, "Panasonic": 305769200, "Samsung": 386642000, "Sony": 161283000, "TCL": 53906000, "Toshiba": 511852400, "Khác": 193041000}, "weeks": [{"h": 12190000, "a": 43230000, "t": 427928200}, {"h": 8091000, "a": 46655000, "t": 687907400}, {"h": 69024000, "a": 70550000, "t": 739935000}, {"h": 28780000, "a": 35872000, "t": 630540500}], "t9": 15.685942208565548}, {"name": "953 Tỉnh Lộ 10", "khu": "Bình Tân", "reg": "HCM", "chain": "ĐML", "total": 5332072000, "brands": {"Haier": 336947000, "Aqua": 448038000, "Daikin": 154592000, "Electrolux": 330480000, "LG": 1021699500, "Panasonic": 1162392000, "Samsung": 507028500, "Sony": 145952000, "TCL": 131434000, "Toshiba": 587324500, "Khác": 506184500}, "weeks": [{"h": 39720000, "a": 98601000, "t": 895169500}, {"h": 100054000, "a": 153656000, "t": 1543166000}, {"h": 169983000, "a": 131194000, "t": 1830185000}, {"h": 27190000, "a": 64587000, "t": 1063551500}], "t9": 20.929559272242592}, {"name": "189A Cống Quỳnh", "khu": "Quận 1", "reg": "HCM", "chain": "ĐML", "total": 1727108800, "brands": {"Haier": 67411000, "Aqua": 249730500, "Daikin": 160091300, "Electrolux": 201428000, "LG": 276213000, "Panasonic": 155418000, "Samsung": 108585000, "Sony": 11781000, "TCL": 34704000, "Toshiba": 293463500, "Khác": 168283500}, "weeks": [{"h": 22990000, "a": 62239000, "t": 312165500}, {"h": 25431000, "a": 40461000, "t": 606949300}, {"h": 18990000, "a": 68357500, "t": 405649000}, {"h": 0, "a": 78673000, "t": 402345000}], "t9": 26.7688889277066}, {"name": "21 Trần Não", "khu": "Thủ Đức", "reg": "HCM", "chain": "ĐML", "total": 4917858600, "brands": {"Haier": 91472000, "Aqua": 304235800, "Daikin": 488361500, "Electrolux": 221711500, "LG": 1018582300, "Panasonic": 289728500, "Samsung": 871996500, "Sony": 99571000, "TCL": 200243000, "Toshiba": 810771500, "Khác": 521185000}, "weeks": [{"h": 44641000, "a": 22793000, "t": 628029500}, {"h": 28390000, "a": 63523000, "t": 1774997800}, {"h": 18441000, "a": 80814500, "t": 804174000}, {"h": 0, "a": 137105300, "t": 1710657300}], "t9": 8.078113660096351}, {"name": "382 Nguyễn Duy Trinh", "khu": "Thủ Đức", "reg": "HCM", "chain": "ĐML", "total": 4496822800, "brands": {"Haier": 185142000, "Aqua": 602266000, "Daikin": 235073000, "Electrolux": 321768000, "LG": 776335800, "Panasonic": 406939400, "Samsung": 300371000, "Sony": 171252000, "TCL": 45250000, "Toshiba": 884226100, "Khác": 568199500}, "weeks": [{"h": 0, "a": 153657000, "t": 696003500}, {"h": 113331000, "a": 95165500, "t": 1096699000}, {"h": 61020000, "a": 205210000, "t": 1536139900}, {"h": 10791000, "a": 148233500, "t": 1167980400}], "t9": 16.098580365430355}, {"name": "542 Cách Mạng Tháng 8", "khu": "Quận 3", "reg": "HCM", "chain": "ĐML", "total": 3641527200, "brands": {"Haier": 396739000, "Aqua": 319100000, "Daikin": 14590000, "Electrolux": 113993500, "LG": 958237600, "Panasonic": 211812500, "Samsung": 234887500, "Sony": 127171000, "TCL": 40468000, "Toshiba": 391239100, "Khác": 833289000}, "weeks": [{"h": 0, "a": 21600000, "t": 578631500}, {"h": 93327000, "a": 92585000, "t": 990641500}, {"h": 204191000, "a": 98788500, "t": 1082903400}, {"h": 99221000, "a": 106126500, "t": 989350800}], "t9": 15.855365610660918}, {"name": "416 Hậu Giang", "khu": "Quận 6", "reg": "HCM", "chain": "ĐML", "total": 7730309400, "brands": {"Haier": 340431000, "Aqua": 971414200, "Daikin": 289718000, "Electrolux": 218389000, "LG": 1058434700, "Panasonic": 1924697000, "Samsung": 473087000, "Sony": 354201000, "TCL": 476006000, "Toshiba": 747156000, "Khác": 876775500}, "weeks": [{"h": 45420000, "a": 331495700, "t": 1459647400}, {"h": 161905000, "a": 255053500, "t": 2196937000}, {"h": 60804000, "a": 184123000, "t": 2383917000}, {"h": 72302000, "a": 200742000, "t": 1689808000}], "t9": 22.33466327817189}, {"name": "1521 Huỳnh Tấn Phát (Phú Mỹ)", "khu": "Quận 7", "reg": "HCM", "chain": "ĐML", "total": 2530753900, "brands": {"Haier": 162520000, "Aqua": 398977500, "Daikin": 76796000, "Electrolux": 86824000, "LG": 507990000, "Panasonic": 275143500, "Samsung": 154132000, "Sony": 85740000, "TCL": 125691000, "Toshiba": 303629900, "Khác": 353310000}, "weeks": [{"h": 46996000, "a": 41755500, "t": 367007500}, {"h": 25362000, "a": 160579000, "t": 897290900}, {"h": 27650000, "a": 99875500, "t": 539185000}, {"h": 62512000, "a": 96767500, "t": 727270500}], "t9": 17.451785265162588}, {"name": "428 Nguyễn Thị Thập", "khu": "Quận 7", "reg": "HCM", "chain": "ĐML", "total": 3860255000, "brands": {"Haier": 102211000, "Aqua": 250242000, "Daikin": 140636500, "Electrolux": 204758000, "LG": 540950000, "Panasonic": 1415751500, "Samsung": 215723000, "Sony": 150283000, "TCL": 112936500, "Toshiba": 272186000, "Khác": 454577500}, "weeks": [{"h": 18190000, "a": 36983000, "t": 739849000}, {"h": 16081000, "a": 70837000, "t": 1100065000}, {"h": 34070000, "a": 87083000, "t": 1023099000}, {"h": 33870000, "a": 55339000, "t": 997242000}], "t9": 16.45870752278006}, {"name": "677 Huỳnh Tấn Phát", "khu": "Quận 7", "reg": "HCM", "chain": "ĐML", "total": 8489682500, "brands": {"Haier": 218268000, "Aqua": 971905500, "Daikin": 178863500, "Electrolux": 428107500, "LG": 1289051000, "Panasonic": 921538500, "Samsung": 2023436000, "Sony": 368389000, "TCL": 500593500, "Toshiba": 788543000, "Khác": 800987000}, "weeks": [{"h": 11990000, "a": 182881000, "t": 1809673900}, {"h": 130973000, "a": 303710000, "t": 2112891000}, {"h": 39483000, "a": 199638000, "t": 2389887900}, {"h": 35822000, "a": 285676500, "t": 2177229700}], "t9": 12.179107180117523}, {"name": "500 Dương Bá Trạc", "khu": "Quận 8", "reg": "HCM", "chain": "ĐML", "total": 2780903200, "brands": {"Haier": 124702000, "Aqua": 556624500, "Daikin": 107459000, "Electrolux": 95772000, "LG": 785337200, "Panasonic": 285314500, "Samsung": 174208500, "Sony": 13990000, "TCL": 38811000, "Toshiba": 292463500, "Khác": 306221000}, "weeks": [{"h": 22990000, "a": 74468500, "t": 346332500}, {"h": 27162000, "a": 196974000, "t": 776455500}, {"h": 63560000, "a": 177989000, "t": 957648000}, {"h": 10990000, "a": 107193000, "t": 700467200}], "t9": 27.266486113065913}, {"name": "291 Đức Hòa Hạ", "khu": "Đức Hòa", "reg": "LAN", "chain": "ĐML", "total": 4305023700, "brands": {"Haier": 495786000, "Aqua": 904260000, "Daikin": 196260000, "Electrolux": 38062000, "LG": 261765000, "Panasonic": 1084581200, "Samsung": 442753500, "Sony": 63201000, "TCL": 172146000, "Toshiba": 126815000, "Khác": 519394000}, "weeks": [{"h": 140665500, "a": 253090000, "t": 961512000}, {"h": 181961000, "a": 301942500, "t": 1107723700}, {"h": 95958000, "a": 250824000, "t": 1240575000}, {"h": 77201500, "a": 98403500, "t": 995213000}], "t9": 44.4319520162006}, {"name": "372 Hậu Nghĩa", "khu": "Đức Hòa", "reg": "LAN", "chain": "ĐML", "total": 2173069000, "brands": {"Haier": 249245000, "Aqua": 436942500, "Daikin": 67550000, "Electrolux": 27461000, "LG": 128497000, "Panasonic": 465513500, "Samsung": 122530000, "Sony": 65430000, "TCL": 141277000, "Toshiba": 309339500, "Khác": 159283500}, "weeks": [{"h": 64260000, "a": 35960000, "t": 375667000}, {"h": 92314000, "a": 131200500, "t": 758293500}, {"h": 20680000, "a": 166190000, "t": 395210500}, {"h": 71991000, "a": 103592000, "t": 643898000}], "t9": 23.993389890410853}, {"name": "Lộc Giang", "khu": "Đức Hòa", "reg": "LAN", "chain": "ĐML", "total": 1960323000, "brands": {"Haier": 74892000, "Aqua": 725789500, "Daikin": 47243000, "Electrolux": 0, "LG": 100686000, "Panasonic": 377650000, "Samsung": 34036000, "Sony": 41470000, "TCL": 131559000, "Toshiba": 89291000, "Khác": 337706500}, "weeks": [{"h": 13490000, "a": 102870000, "t": 201076000}, {"h": 20142000, "a": 249490000, "t": 715930500}, {"h": 41260000, "a": 260486500, "t": 570337500}, {"h": 0, "a": 112943000, "t": 472979000}], "t9": 29.514105450464246}, {"name": "Mỹ Hạnh Nam 2", "khu": "Đức Hòa", "reg": "LAN", "chain": "ĐML", "total": 1827753100, "brands": {"Haier": 71552000, "Aqua": 304412000, "Daikin": 27721000, "Electrolux": 31370000, "LG": 119892500, "Panasonic": 387398500, "Samsung": 199431000, "Sony": 13990000, "TCL": 165076000, "Toshiba": 176552000, "Khác": 330358100}, "weeks": [{"h": 11241000, "a": 31370000, "t": 383001000}, {"h": 9990000, "a": 147008000, "t": 504550600}, {"h": 19980000, "a": 46110000, "t": 476924500}, {"h": 30341000, "a": 79924000, "t": 463277000}], "t9": 8.082743915151452}, {"name": "56 Đường 838 (Đông Thành)", "khu": "Đức Huệ", "reg": "LAN", "chain": "ĐML", "total": 1226215300, "brands": {"Haier": 99774000, "Aqua": 258995300, "Daikin": 13590000, "Electrolux": 6870000, "LG": 80952000, "Panasonic": 317909000, "Samsung": 117177000, "Sony": 55242000, "TCL": 32871000, "Toshiba": 125442000, "Khác": 117393000}, "weeks": [{"h": 0, "a": 57871000, "t": 160243000}, {"h": 34432000, "a": 84232300, "t": 347334300}, {"h": 22280000, "a": 52661000, "t": 277571000}, {"h": 43062000, "a": 64231000, "t": 441067000}], "t9": 31.990143726660598}, {"name": "18A Tây Lân", "khu": "Bình Tân", "reg": "HCM", "chain": "ĐMM", "total": 1430524000, "brands": {"Haier": 160562000, "Aqua": 206236500, "Daikin": 47301000, "Electrolux": 0, "LG": 55613000, "Panasonic": 275950500, "Samsung": 230440000, "Sony": 0, "TCL": 77905000, "Toshiba": 176378000, "Khác": 200138000}, "weeks": [{"h": 21880000, "a": 49541500, "t": 272260000}, {"h": 54361000, "a": 62647000, "t": 522089500}, {"h": 16911000, "a": 56812000, "t": 349685500}, {"h": 67410000, "a": 37236000, "t": 286489000}], "t9": 14.017595143223794}, {"name": "54 Đường Số 7 (Khu Tên Lửa)", "khu": "Bình Tân", "reg": "HCM", "chain": "ĐMM", "total": 2060735700, "brands": {"Haier": 93582000, "Aqua": 286816500, "Daikin": 52980000, "Electrolux": 4660000, "LG": 129193500, "Panasonic": 368307000, "Samsung": 69921000, "Sony": 181313000, "TCL": 130824500, "Toshiba": 487021700, "Khác": 256116500}, "weeks": [{"h": 0, "a": 62035500, "t": 421412200}, {"h": 24012000, "a": 105386000, "t": 801089500}, {"h": 40680000, "a": 79713000, "t": 455484500}, {"h": 28890000, "a": 39682000, "t": 382749500}], "t9": 21.706444613576572}, {"name": "506 Nguyễn Văn Tạo", "khu": "Nhà Bè", "reg": "HCM", "chain": "ĐMM", "total": 2998159000, "brands": {"Haier": 29580000, "Aqua": 153126000, "Daikin": 29772000, "Electrolux": 47385000, "LG": 297531500, "Panasonic": 1337663000, "Samsung": 275102500, "Sony": 81181000, "TCL": 146447000, "Toshiba": 149837500, "Khác": 450533500}, "weeks": [{"h": 16290000, "a": 41537000, "t": 668467500}, {"h": 0, "a": 36752000, "t": 716594000}, {"h": 13290000, "a": 36710000, "t": 786948000}, {"h": 0, "a": 38127000, "t": 826149500}], "t9": 22.298990824482672}, {"name": "Lê Văn Lương (Phước Kiển)", "khu": "Nhà Bè", "reg": "HCM", "chain": "ĐMM", "total": 2293716500, "brands": {"Haier": 44860000, "Aqua": 252361500, "Daikin": 121789500, "Electrolux": 72101000, "LG": 124151000, "Panasonic": 542086500, "Samsung": 267355000, "Sony": 37880000, "TCL": 171096000, "Toshiba": 281230500, "Khác": 378805500}, "weeks": [{"h": 0, "a": 39080000, "t": 296064500}, {"h": 11990000, "a": 76942000, "t": 765042000}, {"h": 12290000, "a": 91627500, "t": 482706000}, {"h": 20580000, "a": 44712000, "t": 749904000}], "t9": 11.719653969489793}, {"name": "Mỹ Hạnh Nam 1", "khu": "Đức Hòa", "reg": "LAN", "chain": "ĐMM", "total": 1528866000, "brands": {"Haier": 115052000, "Aqua": 277238500, "Daikin": 52260000, "Electrolux": 28870000, "LG": 150388000, "Panasonic": 318238500, "Samsung": 114987000, "Sony": 25980000, "TCL": 12280000, "Toshiba": 154609000, "Khác": 278963000}, "weeks": [{"h": 38570000, "a": 41780000, "t": 376117000}, {"h": 11151000, "a": 110123000, "t": 414967000}, {"h": 36170000, "a": 87380000, "t": 392040500}, {"h": 29161000, "a": 37955500, "t": 345741500}], "t9": 22.760178732554124}, {"name": "341 Quốc Lộ 62 (Kiến Tường)", "khu": "Kiến Tường", "reg": "LAN", "chain": "ĐMM", "total": 1758583000, "brands": {"Haier": 307653000, "Aqua": 347328000, "Daikin": 39170000, "Electrolux": 7704000, "LG": 24976500, "Panasonic": 314338500, "Samsung": 503818500, "Sony": 12141000, "TCL": 26521500, "Toshiba": 78349000, "Khác": 96583000}, "weeks": [{"h": 43260000, "a": 58735500, "t": 174114000}, {"h": 69033000, "a": 112098500, "t": 485778000}, {"h": 157127000, "a": 126950000, "t": 574624000}, {"h": 38233000, "a": 49544000, "t": 524067000}], "t9": 34.320343526353376}], "t9agg": {"all": 20.810618040422803, "LAN": 28.90715245652587, "HCM": 19.486357296676733}, "nodata": [{"name": "636 Kinh Dương Vương", "khu": "Bình Tân", "reg": "HCM", "t9": 14.152208257688912}, {"name": "03 Đường 3/2", "khu": "Quận 10", "reg": "HCM", "t9": null}]};
+const COLORS={Haier:"#007AFF",Aqua:"#1FA9C4",LG:"#AF52DE",Samsung:"#5856D6",Panasonic:"#FF9500",Toshiba:"#FF3B30",Electrolux:"#8E8E93",Daikin:"#64B5D9",Sony:"#48484A",TCL:"#A2845E","Khác":"#C7C7CC"};
+/* Logo hãng: để trống thì hiện huy hiệu chữ theo màu hãng. Muốn dùng logo thật, điền đường dẫn ảnh, vd: LOGOS.Haier="logos/haier.png" */
+const LOGOS={};
+const WEEKS=["1–4","5–11","12–18","19–25"];
+const MINE={"Mỹ Hạnh Nam 1":"MHN1","Mỹ Hạnh Nam 2":"MHN2"};
+const TH=1,MIN=15;
+const gap=s=>(MIN-s.share).toFixed(1).replace(".",",");
+function trendOf(s){const none={k:"",sev:0,text:""};if(s.weeks.slice(1).some(w=>!w.t))return none;
+  const v=s.weeks.map(w=>(w.h+w.a)/w.t*100),d1=v[2]-v[1],d2=v[3]-v[2],st=d=>d<=-TH?-1:d>=TH?1:0,a=st(d1),b=st(d2),f=x=>Math.abs(x).toFixed(1).replace(".",",");
+  if(a<0&&b<0)return{k:"down",sev:2,text:`Giảm 2 tuần liền · −${f(v[3]-v[1])} điểm`};
+  if(b<0)return{k:"down",sev:1,text:`Tuần cuối giảm ${f(d2)} điểm`};
+  if(a>0&&b>0)return{k:"up",sev:0,text:`Tăng 2 tuần liền · +${f(v[3]-v[1])} điểm`};
+  if(b>0)return{k:"up",sev:0,text:a<0?`Hồi phục · +${f(d2)} điểm`:`Tuần cuối tăng ${f(d2)} điểm`};
+  return none;}
+function streakOf(s){return trendOf(s).sev}
+const norm=t=>t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d");
+const LIGHT=new Set(["Khác","Aqua","Daikin"]);
+const shops=D.shops.map((s,i)=>{const ha=s.brands.Haier+s.brands.Aqua,share=ha/s.total*100;
+  return {...s,id:"s"+i,ha,share,delta:share-s.t9,prov:s.reg==="LAN"?"Long An":"TP.HCM",mine:null,trend:trendOf(s),streak:streakOf(s)};});
+const byShare=[...shops].sort((a,b)=>b.share-a.share);byShare.forEach((s,i)=>s.rank=i+1);
+
+const pct=(v,d=1)=>v.toFixed(d).replace(".",",")+"%";
+const pts=v=>(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(1).replace(".",",");
+const money=v=>v>=1e9?(v/1e9).toFixed(2).replace(".",",")+" tỷ":Math.round(v/1e6).toLocaleString("vi-VN")+" tr";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cls=v=>Math.abs(v)<0.05?"flat":v>0?"up":"down";
+const chip=v=>`<span class="chip ${cls(v)}">${v>0.05?"▲":v<-0.05?"▼":""} ${Math.abs(v).toFixed(1).replace(".",",")} điểm</span>`;
+function ring(p,max,size,stroke,colA,colB,id){const r=(size-stroke)/2,c=2*Math.PI*r,len=Math.min(1,p/max)*c;
+  return `<svg class="ring" viewBox="0 0 ${size} ${size}" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${colA}"/><stop offset="1" stop-color="${colB}"/></linearGradient></defs>
+  <circle class="bg" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}" stroke="url(#${id})" stroke-dasharray="${len} ${c}" transform="rotate(-90 ${size/2} ${size/2})"/>
+  <text x="50%" y="46%" text-anchor="middle" dominant-baseline="middle" font-size="${size*.2}" font-weight="800" style="fill:var(--ink);font-family:var(--display)">${pct(p,1)}</text><text x="50%" y="66%" text-anchor="middle" dominant-baseline="middle" font-size="${size*.115}" font-weight="600" style="fill:var(--ink2)">tháng 10</text></svg>`;}
+
+let filter="all",sortBy="share",query="",pick="",selected=null,myName=null;
+try{filter=localStorage.getItem("ihs2-f")||"all"}catch(e){}
+try{myName=localStorage.getItem("ihs2-my")}catch(e){}
+
+const inF=s=>filter==="all"||s.reg===filter;
+function area(){const l=shops.filter(inF);const ha=l.reduce((a,s)=>a+s.ha,0),t=l.reduce((a,s)=>a+s.total,0);return {l,ha,t,share:ha/t*100,t9:D.t9agg[filter],h:l.reduce((a,s)=>a+s.brands.Haier,0),a:l.reduce((a,s)=>a+s.brands.Aqua,0)};}
+
+function brandRows(b,total,cls=""){return Object.entries(b).filter(([,v])=>v>0).sort((x,y)=>(x[0]==="Khác")-(y[0]==="Khác")||y[1]-x[1]).map(([n,v])=>{const p=v/total*100;
+  return `<div class="br${n==="Haier"||n==="Aqua"?" hl":""}"><span class="n"><i class="dot" style="background:${COLORS[n]}"></i>${n}</span><span class="trk"><i style="width:${Math.min(100,p*2.2)}%;background:${COLORS[n]}"></i></span><span class="p num">${pct(p)}</span><span class="m num">${money(v)}</span></div>`;}).join("");}
+function donut(s){const size=150,r=56,sw=20,c=2*Math.PI*r;let off=0;
+  const parts=Object.entries(s.brands).filter(([,v])=>v>0).sort((x,y)=>(x[0]==="Haier"?-2:x[0]==="Aqua"?-1:x[0]==="Khác"?9:0)-(y[0]==="Haier"?-2:y[0]==="Aqua"?-1:y[0]==="Khác"?9:0)||y[1]-x[1]);
+  const segs=parts.map(([n,v])=>{const len=v/s.total*c;const el=`<circle cx="75" cy="75" r="${r}" fill="none" stroke="${COLORS[n]}" stroke-width="${sw}" stroke-dasharray="${Math.max(0,len-1.5)} ${c}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return el;}).join("");
+  return `<svg class="donut" viewBox="0 0 ${size} ${size}" role="img" aria-label="Cơ cấu hãng"><circle cx="75" cy="75" r="${r}" fill="none" stroke="var(--fill)" stroke-width="${sw}"/>${segs}
+  <text x="75" y="70" text-anchor="middle" font-size="24" font-weight="800">${pct(s.share)}</text><text x="75" y="91" text-anchor="middle" font-size="11" style="fill:var(--ink2)">Haier + Aqua</text></svg>`;}
+function weeks(s){const v=s.weeks.map(w=>w.t?{h:w.h/w.t*100,a:w.a/w.t*100}:{h:0,a:0});const max=Math.max(40,...v.map(x=>x.h+x.a))*1.12;
+  return `<div class="weeks">${v.map((x,i)=>`<div class="wk"><b class="num">${pct(x.h+x.a,0)}</b><div class="col" style="height:${(x.h+x.a)/max*100}%"><i style="height:${x.a/(x.h+x.a||1)*100}%;background:${COLORS.Aqua}"></i><i style="height:${x.h/(x.h+x.a||1)*100}%;background:${COLORS.Haier}"></i></div><span>${WEEKS[i]}/10</span></div>`).join("")}</div>
+  <div class="legend"><span><i class="dot" style="background:${COLORS.Haier}"></i>Haier</span><span><i class="dot" style="background:${COLORS.Aqua}"></i>Aqua</span></div>`;}
+function topComp(s){return Object.entries(s.brands).filter(([n])=>!["Haier","Aqua","Khác"].includes(n)).sort((a,b)=>b[1]-a[1])[0];}
+function logo(n){const c=COLORS[n]||"#8E8E93",h=n==="Haier"||n==="Aqua";
+  return LOGOS[n]?`<span class="lg img" title="${n}"><img src="${LOGOS[n]}" alt="${n}"></span>`:`<span class="lg${h?" hi":""}" style="--c:${c}">${n}</span>`;}
+function brandRows2(b,total){const e=Object.entries(b).filter(([,v])=>v>0).sort((x,y)=>(x[0]==="Khác")-(y[0]==="Khác")||y[1]-x[1]),mx=Math.max(...e.map(([,v])=>v/total*100))*1.02;
+  return e.map(([n,v],i)=>{const p=v/total*100,c=COLORS[n];return `<div class="dbr${n==="Haier"||n==="Aqua"?" hl":""}">${logo(n)}${pill(p,mx,"",i*0.05,`--pg:linear-gradient(90deg,${c},color-mix(in srgb,${c} 62%,#fff));--pglow:color-mix(in srgb,${c} 35%,transparent)${LIGHT.has(n)?";color:#1C1C1E;text-shadow:none":""}`)}<span class="m num">${money(v)}</span></div>`;}).join("");}
+function detailHTML(s,closable){const A=area(),vs=s.share-A.share,c=topComp(s),cp=c[1]/s.total*100,k=cls(s.delta),rc=RING[k],GM=Math.max(50,Math.ceil(byShare[0].share/10)*10),
+  v=s.weeks.map(w=>w.t?{h:w.h/w.t*100,a:w.a/w.t*100}:{h:0,a:0}),tot=v.map(x=>x.h+x.a),mx=Math.max(...tot,1);
+  const ins=s.ha>c[1]?`Haier + Aqua đang dẫn shop, hơn ${c[0]} ${pct(s.share-cp)}.`:`${c[0]} đang lấy khách mạnh nhất với ${pct(cp)}, hơn Haier + Aqua ${pct(cp-s.share)}.`;
+  const mn=s.share<MIN?` Thị phần dưới mức tối thiểu ${MIN}%, còn thiếu ${gap(s)} điểm.`:` Đạt mức tối thiểu ${MIN}%.`;
+  const gIc=k==="up"?IC.up:k==="down"?IC.down:IC.chart,gBg=k==="up"?"linear-gradient(145deg,#4BDB9A,#17A764)":k==="down"?"linear-gradient(145deg,#FFA25A,#FF5A3C)":"linear-gradient(145deg,#C9CDD3,#8E94A0)";
+  const rows=tot.map((x,i)=>{const cl=i===0?"p-blue":(x>tot[i-1]+0.05?"p-green":x<tot[i-1]-0.05?"p-red":"p-silver");return `<div class="gw-row"><b>W${i+1}</b>${pill(x,mx,cl,i*0.08)}<span class="gw-r"><em>${WEEKS[i]}/10</em><small>H ${pct(v[i].h,0)} · A ${pct(v[i].a,0)}</small></span></div>`;}).join("");
+  return `<div class="d-head"><div><span class="gw-eye">Phân tích thị phần</span><h3>${esc(s.name)} ${s.mine?`<span class="badge">${s.mine}</span>`:""}</h3><div class="sub">${s.chain} · ${esc(s.khu)} · ${s.prov}</div></div>${closable?`<button class="x" type="button" data-close aria-label="Đóng"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l10 10M11 1 1 11"/></svg></button>`:chip(s.delta)}</div>
+  <div class="gw-mid"><div class="gw-g">${gauge(s,rc,"d"+(closable?1:0),GM)}</div><div class="gw-tiles">
+    <div class="gw-tile"><div class="gw-tl"><span class="gw-ic" style="--ic:${gBg}">${gIc}</span><span class="gw-lb">Tăng trưởng<small>so với T9</small></span></div><b class="num ${s.delta>=0?"tc-up":"tc-down"}">${pts(s.delta)} điểm</b></div>
+    <div class="gw-tile"><div class="gw-tl"><span class="gw-ic" style="--ic:linear-gradient(145deg,#6A9BFF,#4E5BF2)">${IC.bag}</span><span class="gw-lb">Doanh số<small>Haier + Aqua</small></span></div><b class="num">${money(s.ha)}</b></div></div></div>
+  <div class="stats"><div><span>Hạng</span><b class="num">${s.rank} / ${shops.length}</b></div><div><span>Tháng 9</span><b class="num">${pct(s.t9)}</b></div>
+    <div><span>So với TB khu vực</span><b class="num ${vs>=0?"tc-up":"tc-down"}">${pts(vs)} điểm</b></div><div><span>DS tổng shop</span><b class="num">${money(s.total)}</b></div></div>
+  <div><p class="grp-t">Thị phần theo hãng</p><div class="grp dgrp">${brandRows2(s.brands,s.total)}</div></div>
+  <div><p class="grp-t">Tiến độ hàng tuần (tháng 10)</p><div class="gw-rows">${rows}</div></div>
+  <p class="foot-note dins">${ins}${mn}</p>`;}
+
+let spkN=0;
+function spark(v,col){const w=120,h=36,min=Math.min(...v),max=Math.max(...v),rg=max-min||1;
+  const pts=v.map((y,i)=>[i/(v.length-1)*w,h-4-(y-min)/rg*(h-10)]);
+  const dl=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");const id="sg"+(spkN++);const L=pts[pts.length-1];
+  return `<svg class="spk" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+  <path d="${dl} L${w} ${h} L0 ${h}Z" fill="url(#${id})"/><path class="ln" d="${dl}" stroke="${col}" vector-effect="non-scaling-stroke"/><circle cx="${L[0]}" cy="${L[1]}" r="3.2" fill="${col}" stroke="var(--surface-solid)" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;}
+function pill(p,max,cl,delay,extra=""){return `<span class="pill"><i class="${cl}" style="width:${Math.max(4,p/max*100)}%;--d:${delay}s;${extra}"><span>${pct(p)}</span></i></span>`;}
+const IC={chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M4 20h16"/><path d="M7 16v-4M11 16V8M15 16v-6M19 16V5"/></svg>',
+  store:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 2-4h14l2 4"/><path d="M3 8h18v1a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 12v8h14v-8"/><path d="M10 20v-4h4v4"/></svg>',
+  layers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/></svg>',
+  bag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 6-6 4 4 6-7"/><path d="M15 7h5v5"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 8 6 6 4-4 6 7"/><path d="M15 17h5v-5"/></svg>'};
+
+const RING={up:["#34C759","#17A764"],down:["#FF6B5E","#FF3B30"],flat:["#B6BAC2","#9298A1"]};
+function gauge(s,rc,id,GM){const S=170,C=85,r=56,sw=13,cir=2*Math.PI*r,sweep=270,full=cir*sweep/360,f=Math.min(1,s.share/GM),n=GM/10;
+  let t="";for(let k=0;k<=n;k++){const a=(135+sweep*k/n)*Math.PI/180;t+=`<text x="${(C+73*Math.cos(a)).toFixed(1)}" y="${(C+73*Math.sin(a)).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="600" style="fill:var(--ink2)">${k*10}</text>`;}
+  const ea=(135+sweep*f)*Math.PI/180,ex=(C+r*Math.cos(ea)).toFixed(1),ey=(C+r*Math.sin(ea)).toFixed(1),tf=`rotate(135 ${C} ${C})`;
+  return `<svg class="gauge" viewBox="0 0 ${S} ${S}" aria-hidden="true"><defs><linearGradient id="gg${id}" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${rc[0]}"/><stop offset="1" stop-color="${rc[1]}"/></linearGradient></defs>
+  ${t}<circle cx="${C}" cy="${C}" r="${r}" fill="none" stroke="var(--fill)" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${full} ${cir}" transform="${tf}"/>
+  <circle class="garc" style="--gv:${full*f}" cx="${C}" cy="${C}" r="${r}" fill="none" stroke="url(#gg${id})" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${full*f} ${cir}" transform="${tf}"/>
+  <circle class="gknob" style="--ga:${sweep*f}deg" cx="${ex}" cy="${ey}" r="4.6" fill="#fff" stroke="${rc[1]}" stroke-width="2.5"/>
+  <text class="gcv" x="${C}" y="${C-9}" text-anchor="middle" dominant-baseline="middle" font-size="27" font-weight="800" style="fill:var(--ink);font-family:var(--display);letter-spacing:-.03em">${pct(s.share,1)}</text>
+  <text x="${C}" y="${C+13}" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="600" style="fill:var(--ink2)">Haier + Aqua</text><text x="${C}" y="${C+27}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="500" style="fill:var(--ink2)">tháng 10</text></svg>`;}
+function shopCard(s,id,A,full){const vs=s.share-A.share,c=cls(s.delta),rc=RING[c],GM=Math.max(50,Math.ceil(byShare[0].share/10)*10),
+  v=s.weeks.map(w=>w.t?(w.h+w.a)/w.t*100:0),mx=Math.max(...v,1);
+  const medal=s.rank===1?"🥇 ":s.rank===2?"🥈 ":s.rank===3?"🥉 ":"";
+  const rows=v.map((x,i)=>{const cl=i===0?"p-blue":(x>v[i-1]+0.05?"p-green":x<v[i-1]-0.05?"p-red":"p-silver");return `<div class="gw-row"><b>W${i+1}</b>${pill(x,mx,cl,i*0.08)}<em>${WEEKS[i]}/10</em></div>`;}).join("");
+  const gIc=c==="up"?IC.up:c==="down"?IC.down:IC.chart,gBg=c==="up"?"linear-gradient(145deg,#4BDB9A,#17A764)":c==="down"?"linear-gradient(145deg,#FFA25A,#FF5A3C)":"linear-gradient(145deg,#C9CDD3,#8E94A0)";
+  return `<button type="button" class="mw gw glass${full?" gw-full":""}" style="--gwt:${rc[1]}" data-open="${s.id}" aria-current="${selected===s.id}" aria-label="${esc(s.name)}, thị phần ${pct(s.share)}, hạng ${s.rank} trên ${shops.length}">
+    <div class="gw-head">${full?'<span class="gw-eye">Phân tích thị phần</span>':""}<div class="gw-title"><h3><span>${esc(s.name)}</span>${s.mine?`<span class="badge">${s.mine}</span>`:""}</h3>${chip(s.delta)}</div>
+      <div class="sub">${medal}${s.chain} · ${esc(s.khu)} · Hạng ${s.rank}/${shops.length}</div>${s.share<MIN?`<span class="alert a3">⚠ Dưới mức ${MIN}% · thiếu ${gap(s)} điểm</span>`:""}${s.trend.text?`<span class="alert ${s.trend.k==="up"?"up":"a"+s.trend.sev}">${s.trend.sev>=2?"⚠ ":s.trend.k==="up"?"▲ ":"▼ "}${s.trend.text}</span>`:""}</div>
+    <div class="gw-mid"><div class="gw-g">${gauge(s,rc,id,GM)}</div><div class="gw-tiles">
+      <div class="gw-tile"><div class="gw-tl"><span class="gw-ic" style="--ic:${gBg}">${gIc}</span><span class="gw-lb">Tăng trưởng<small>so với T9</small></span></div><b class="num ${s.delta>=0?"tc-up":"tc-down"}">${pts(s.delta)} điểm</b></div>
+      <div class="gw-tile"><div class="gw-tl"><span class="gw-ic" style="--ic:linear-gradient(145deg,#6A9BFF,#4E5BF2)">${IC.bag}</span><span class="gw-lb">Doanh số<small>Haier + Aqua</small></span></div><b class="num">${money(s.ha)}</b></div></div></div>
+    <div class="gw-cap"><b>Tổng thị phần Haier + Aqua</b><span>Tháng 10 · T9 ${pct(s.t9)} · So với TB ${pts(vs)} điểm</span></div>
+    <div><p class="gw-wt">Tiến độ hàng tuần</p><div class="gw-rows">${rows}</div></div></button>`;}
+function render(){
+  const A=area();
+  document.getElementById("lead").textContent=`${A.l.length} shop ${filter==="all"?"Long An và TP.HCM":filter==="LAN"?"Long An":"TP.HCM"} · so với tháng 9 đầy đủ`;
+  const withD=A.l.slice().sort((a,b)=>b.delta-a.delta),best=withD[0],worst=withD[withD.length-1];
+  const d=A.share-A.t9;
+  const wkShare=l=>[0,1,2,3].map(j=>{const ha=l.reduce((a,s)=>a+s.weeks[j].h+s.weeks[j].a,0),t=l.reduce((a,s)=>a+s.weeks[j].t,0);return t?ha/t*100:0;});
+  const wkDS=l=>[0,1,2,3].map(j=>l.reduce((a,s)=>a+s.weeks[j].h+s.weeks[j].a,0));
+  const nNo=D.nodata.filter(n=>filter==="all"||n.reg===filter).length;
+  const W=(o)=>`<${o.btn?`button type="button" data-open="${o.btn}"`:"div"} class="w" style="--tint:${o.tint};--grad:${o.grad}">
+    <div class="w-top"><span class="app">${o.icon}</span><span class="tag ${o.tagc}">${o.tag}</span></div>
+    <div class="lab">${o.lab}</div><div class="big num" style="color:${o.color||"var(--ink)"}">${o.big}</div><div class="foot">${o.foot}</div>${spark(o.sp,o.tint)}</${o.btn?"button":"div"}>`;
+  document.getElementById("widgets").innerHTML=[
+    W({tint:"#4F7BFF",grad:"linear-gradient(145deg,#6A9BFF,#4E5BF2)",icon:IC.chart,tag:`${d>=0?"↗":"↘"} ${pts(d)}đ`,tagc:cls(d),lab:"Thị phần Haier + Aqua",big:pct(A.share).replace("%","<small>%</small>"),foot:`T9: ${pct(A.t9)} · theo tuần T10`,sp:wkShare(A.l)}),
+    W({tint:"#E0469A",grad:"linear-gradient(145deg,#FF7AC0,#D9328A)",icon:IC.store,tag:`DS H+A ${money(A.ha)}`,tagc:"info",lab:"Shop có số T10",big:`${A.l.length}`,foot:nNo?`${nNo} shop chưa có số tháng 10`:"Đủ số tất cả shop",sp:wkDS(A.l)}),
+    W({btn:best.id,tint:"#22B573",grad:"linear-gradient(145deg,#4BDB9A,#17A764)",icon:IC.up,tag:`↗ ${esc(best.name)}`,tagc:"up",lab:"Tăng mạnh nhất",big:`${pts(best.delta)}<small> điểm</small>`,color:"var(--green)",foot:`${pct(best.t9)} → ${pct(best.share)} so với T9`,sp:wkShare([best])}),
+    W({btn:worst.id,tint:"#FF6A3D",grad:"linear-gradient(145deg,#FFA25A,#FF5A3C)",icon:IC.down,tag:`↘ ${esc(worst.name)}`,tagc:"down",lab:"Giảm mạnh nhất",big:`${pts(worst.delta)}<small> điểm</small>`,color:"var(--red)",foot:`${pct(worst.t9)} → ${pct(worst.share)} so với T9`,sp:wkShare([worst])})
+  ].join("");
+
+  const my=shops.find(s=>s.name===myName)||shops.find(s=>MINE[s.name])||byShare[0];
+  shops.forEach(s=>{s.mine=s===my?(MINE[s.name]||"Của bạn"):null;});
+  const mine=[my];
+  {const it=[...shops].sort((a,b)=>a.khu.localeCompare(b.khu,"vi")||a.name.localeCompare(b.name,"vi")).map(s=>({g:`${s.khu} · ${s.prov}`,v:s.id,l:s.name,sub:pct(s.share)}));
+   ddSet("ddMine",it,my.id,my.name);}
+  document.getElementById("mine").classList.add("one");
+  document.getElementById("mineTtl").hidden=!mine.length;document.getElementById("mine").hidden=!mine.length;
+  document.getElementById("mine").innerHTML=mine.map((s,i)=>shopCard(s,"m"+i,A,true)).join("");
+
+  {const ks=[...new Set(A.l.map(s=>s.khu))].sort((a,b)=>a.localeCompare(b,"vi")),ns=[...A.l].sort((a,b)=>a.name.localeCompare(b.name,"vi"));
+  if(pick&&!ks.some(k=>"k:"+k===pick)&&!A.l.some(s=>"s:"+s.id===pick))pick="";
+  const it=[{g:"",v:"",l:`Tất cả shop (${A.l.length})`,sub:""}];
+  ks.forEach(k=>it.push({g:"Theo khu",v:"k:"+k,l:k,sub:A.l.filter(s=>s.khu===k).length+" shop"}));
+  ns.forEach(s=>it.push({g:"Theo shop",v:"s:"+s.id,l:s.name,sub:`${s.khu} · ${pct(s.share)}`}));
+  ddSet("ddQ",it,pick,(it.find(x=>x.v===pick)||it[0]).l);}
+  const mineIds=new Set(mine.filter(s=>s.mine).map(s=>s.id));
+  let l=A.l.filter(s=>!pick||(pick[0]==="k"?"k:"+s.khu===pick:"s:"+s.id===pick));
+  const hid=pick?0:l.filter(s=>mineIds.has(s.id)).length;if(hid)l=l.filter(s=>!mineIds.has(s.id));
+  l.sort((a,b)=>sortBy==="share"?b.share-a.share:sortBy==="delta"?b.delta-a.delta:sortBy==="warn"?((b.share<MIN)-(a.share<MIN)||b.streak-a.streak||a.share-b.share):b.total-a.total);
+  const maxS=Math.max(...shops.map(s=>s.share))*1.05;
+  const nod=D.nodata.filter(n=>(filter==="all"||n.reg===filter)&&(!pick||pick==="k:"+n.khu));
+  const nw=A.l.filter(s=>s.streak>=2).length,nb=A.l.filter(s=>s.share<MIN).length;document.getElementById("cnt").innerHTML=`<span>${l.length} shop · TB ${pct(A.share)}</span>${hid?`<span>${hid} shop của bạn ở trên</span>`:""}${nb?`<span class="alert a3" style="margin:0">⚠ ${nb} shop dưới mức ${MIN}%</span>`:""}${nw?`<span class="alert a2" style="margin:0">⚠ ${nw} shop giảm ≥2 tuần liên tiếp</span>`:""}`;
+  document.getElementById("list").innerHTML=l.map((s,ix)=>shopCard(s,"l"+ix,A)).join("")
+   + nod.map(n=>`<div class="row nodata"><span class="rk">–</span><span class="mid"><span class="nm">${esc(n.name)}</span><span class="meta">${esc(n.khu)} · chưa có số T10${n.t9!=null?` · T9 ${pct(n.t9)}`:""}</span></span><span class="rt"><b style="font-size:15px;color:var(--ink2)">—</b></span><span></span></div>`).join("")
+   + (l.length+nod.length?"":`<div class="row nodata"><span></span><span class="mid"><span class="nm">Không có shop khớp "${esc(query)}"</span><span class="meta">Thử tên đường hoặc tên khu khác.</span></span></div>`);
+
+  if(!selected||!shops.find(s=>s.id===selected&&inF(s))) selected=(shops.find(s=>s.mine&&inF(s))||byShare.find(inF)).id;
+  document.getElementById("side").innerHTML=detailHTML(shops.find(s=>s.id===selected),false);
+
+  const agg={};A.l.forEach(s=>Object.entries(s.brands).forEach(([n,v])=>agg[n]=(agg[n]||0)+v));
+  const br=Object.entries(agg).sort((a,b)=>(a[0]==="Khác")-(b[0]==="Khác")||b[1]-a[1]);let k=0;
+  document.getElementById("bsub").textContent=`Tổng ${money(A.t)}`;
+  document.getElementById("brands").innerHTML=br.map(([n,v])=>{const o=n==="Khác";if(!o)k++;const p=v/A.t*100;
+    const c=COLORS[n];
+    return `<div class="br${n==="Haier"||n==="Aqua"?" hl":""}"><span class="mini-rk num">${o?"–":k}</span><span class="n">${logo(n)}</span>${pill(p,br[0][1]/A.t*100*1.02,"",k*0.05,`--pg:linear-gradient(90deg,${c},color-mix(in srgb,${c} 62%,#fff));--pglow:color-mix(in srgb,${c} 35%,transparent)${LIGHT.has(n)?";color:#1C1C1E;text-shadow:none":""}`)}<span class="m num">${money(v)}</span></div>`;}).join("");
+  const named=br.filter(b=>b[0]!=="Khác"),pos=n=>named.findIndex(b=>b[0]===n)+1;
+  document.getElementById("summary").innerHTML=`<b>Kết luận nhanh:</b> ${named[0][0]} và ${named[1][0]} đang lấy khách nhiều nhất. Aqua đứng hạng ${pos("Aqua")}, Haier hạng ${pos("Haier")}. Gộp lại Haier + Aqua chiếm ${pct(A.share)}, ${d>=0?"tăng":"giảm"} ${Math.abs(d).toFixed(1).replace(".",",")} điểm so với tháng 9.`;
+
+  document.querySelectorAll(".large .seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.f===filter));
+  document.querySelectorAll("#sorts button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===sortBy));
+  cuAll();
+}
+
+/* ---- số chạy từ 0 đến giá trị khi mở hoặc vuốt tới ---- */
+const CU_SEL=".num:not(.mini-rk),.chip,.gcv,.big,.pill i span";
+const CU_RE=/\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g;
+const cuReduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+let cuQuiet=false;const cuLast={};
+["input","click","change"].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest(".dd,#sorts")){cuQuiet=true;setTimeout(()=>cuQuiet=false,80);}},true));
+function cuFmt(k,x){const [a,b]=k.s.split(","),dec=(b||"").length;let n=x.toFixed(dec).replace(".",",");
+  if(a.includes(".")){const [i,d]=n.split(",");n=Number(i).toLocaleString("vi-VN")+(d?","+d:"");}return n;}
+function cuBuild(o,e){let out="",last=0;o.toks.forEach((k,j)=>{out+=o.t.slice(last,k.i)+cuFmt(k,o.vals[j]*e);last=k.i+k.s.length;});return out+o.t.slice(last);}
+function cuPlay(o){const t0=performance.now();(function f(now){const p=Math.min(1,Math.max(0,(now-t0)/1000)),e=1-Math.pow(1-p,3);o.n.nodeValue=p>=1?o.t:cuBuild(o,e);if(p<1)requestAnimationFrame(f);})(t0);}
+const cuIO=new IntersectionObserver(es=>es.forEach(x=>{if(!x.isIntersecting)return;const el=x.target;cuIO.unobserve(el);if(el.classList&&el.classList.contains("gauge"))el.classList.add("go");
+  (el._cu||[]).forEach(a=>a.pill?(a.pill.style.animationPlayState="running"):cuPlay(a));el._cu=null;}),{threshold:.15});
+function cuRun(root,force){if(!root||cuReduce)return;
+  const gs=root.querySelectorAll(".gauge");
+  if(!force){const key=root.textContent;if(cuQuiet||cuLast[root.id]===key){cuLast[root.id]=key;gs.forEach(g=>g.classList.add("still"));return;}cuLast[root.id]=key;}
+  const groups=new Map(),add=(tg,o)=>{if(!groups.has(tg))groups.set(tg,[]);groups.get(tg).push(o);};
+  root.querySelectorAll(CU_SEL).forEach(el=>el.childNodes.forEach(n=>{if(n.nodeType!==3||!/\d/.test(n.nodeValue))return;
+    const t=n.nodeValue;let toks=[...t.matchAll(CU_RE)].map(m=>({i:m.index,s:m[0]}));if(t.includes("/"))toks=toks.slice(0,1);if(!toks.length)return;
+    const o={n,t,toks,vals:toks.map(k=>parseFloat(k.s.replace(/\./g,"").replace(",",".")))};n.nodeValue=cuBuild(o,0);add(el.closest(".gauge")||el,o);}));
+  root.querySelectorAll(".pill i").forEach(i=>{i.style.animationPlayState="paused";add(i.closest(".gw-row,.dbr,.br")||i,{pill:i});});
+  gs.forEach(g=>{if(!groups.has(g))groups.set(g,[]);});
+  groups.forEach((arr,tg)=>{tg._cu=(tg._cu||[]).concat(arr);cuIO.observe(tg);});}
+function cuAll(){["widgets","mine","list","brands","side"].forEach(id=>cuRun(document.getElementById(id)));}
+
+/* ---- danh sách thả xuống tự vẽ (có ô tìm không dấu) ---- */
+const DD={};
+function ddCloseAll(){document.querySelectorAll(".dd-panel").forEach(p=>{p.hidden=true;p.parentElement.querySelector(".dd-btn").setAttribute("aria-expanded","false");});}
+function ddPaint(id){const st=DD[id],q=norm(st.inp.value.trim());let g=null,h="";
+  st.items.forEach(it=>{if(q&&!norm(it.l+" "+(it.sub||"")+" "+it.g).includes(q))return;
+    if(it.g!==g){g=it.g;if(g)h+=`<div class="dd-g">${esc(g)}</div>`;}
+    h+=`<button type="button" class="dd-opt" role="option" aria-selected="${it.v===st.value}" data-v="${esc(it.v)}"><span>${esc(it.l)}</span>${it.sub?`<em>${esc(it.sub)}</em>`:""}</button>`;});
+  st.list.innerHTML=h||'<div class="dd-empty">Không có kết quả</div>';}
+function ddSet(id,items,value,label){const st=DD[id];st.items=items;st.value=value;st.val.textContent=label;if(!st.panel.hidden)ddPaint(id);}
+function ddMake(id,onPick){const r=document.getElementById(id),st=DD[id]={items:[],value:"",btn:r.querySelector(".dd-btn"),panel:r.querySelector(".dd-panel"),inp:r.querySelector("input"),list:r.querySelector(".dd-list"),val:r.querySelector(".dd-val")};
+  st.btn.addEventListener("click",()=>{if(!st.panel.hidden){ddCloseAll();return;}ddCloseAll();st.panel.hidden=false;st.btn.setAttribute("aria-expanded","true");st.inp.value="";ddPaint(id);
+    const on=st.list.querySelector('[aria-selected="true"]');if(on)st.list.scrollTop=Math.max(0,on.offsetTop-st.list.offsetTop-60);if(matchMedia("(hover:hover)").matches)st.inp.focus();});
+  st.inp.addEventListener("input",()=>ddPaint(id));
+  st.list.addEventListener("click",e=>{const o=e.target.closest(".dd-opt");if(!o)return;ddCloseAll();onPick(o.dataset.v);});}
+document.addEventListener("click",e=>{if(!e.target.closest(".dd"))ddCloseAll();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")ddCloseAll();});
+const sheet=document.getElementById("sheet"),scrim=document.getElementById("scrim");
+function openShop(id){selected=id;const wide=matchMedia("(min-width:1101px)").matches;render();
+  if(wide){document.getElementById("side").scrollIntoView({block:"nearest",behavior:"smooth"});return;}
+  document.getElementById("sheetBody").innerHTML=detailHTML(shops.find(s=>s.id===id),true);cuRun(document.getElementById("sheetBody"),true);
+  sheet.hidden=false;scrim.hidden=false;sheet.scrollTop=0;requestAnimationFrame(()=>{sheet.classList.add("on");scrim.classList.add("on")});document.body.style.overflow="hidden";}
+function closeSheet(){sheet.classList.remove("on");scrim.classList.remove("on");document.body.style.overflow="";setTimeout(()=>{sheet.hidden=true;scrim.hidden=true},320);}
+document.addEventListener("click",e=>{const o=e.target.closest("[data-open]");if(o){openShop(o.dataset.open);return;}
+  if(e.target.closest("[data-close]")||e.target===scrim)closeSheet();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!sheet.hidden)closeSheet();});
+let sy=null;sheet.addEventListener("touchstart",e=>{if(sheet.scrollTop<=0)sy=e.touches[0].clientY},{passive:true});
+sheet.addEventListener("touchend",e=>{if(sy!=null&&e.changedTouches[0].clientY-sy>90)closeSheet();sy=null});
+document.querySelector(".large .seg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;try{localStorage.setItem("ihs2-f",filter)}catch(x){}render();});
+document.getElementById("sorts").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sortBy=b.dataset.s;render();});
+ddMake("ddMine",v=>{const sh=shops.find(s=>s.id===v);if(sh){myName=sh.name;try{localStorage.setItem("ihs2-my",myName)}catch(e){}}render();});
+ddMake("ddQ",v=>{pick=v;if(pick[0]==="s")selected=pick.slice(2);render();});
+const nav=document.getElementById("nav");addEventListener("scroll",()=>nav.classList.toggle("scrolled",scrollY>60),{passive:true});
+render();
+setTimeout(()=>document.body.classList.add('settled'),2200);
+</script>
